@@ -1,5 +1,3 @@
-public struct V1SDK {
-    public private(set) var text = "Hello, V1SDK!"
-
-    public init() {}
-}
+@_exported import AcquireIO
+@_exported import AcquireIOSockets
+@_exported import WebRTC
