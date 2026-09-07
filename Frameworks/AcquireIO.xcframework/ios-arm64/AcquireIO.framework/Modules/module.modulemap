@@ -1,6 +1,6 @@
 framework module AcquireIO {
-  umbrella header "AcquireIO.h"
-  export *
+  umbrella header "AcquireIO-umbrella.h"
 
+  export *
   module * { export * }
 }

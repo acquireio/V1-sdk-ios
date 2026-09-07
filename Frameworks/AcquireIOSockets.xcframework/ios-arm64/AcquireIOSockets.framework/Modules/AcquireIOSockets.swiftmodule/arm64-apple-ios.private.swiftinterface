@@ -2,6 +2,7 @@
 // swift-compiler-version: Apple Swift version 6.3.3 effective-4.1.50 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)
 // swift-module-flags: -target arm64-apple-ios12.0 -enable-objc-interop -enable-library-evolution -swift-version 4 -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name AcquireIOSockets
 // swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.3
+@_exported import AcquireIOSockets
 import CommonCrypto
 import CoreFoundation
 import Dispatch
@@ -12,264 +13,37 @@ import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
 import zlib
-public protocol SocketLogger : AnyObject {
-  var log: Swift.Bool { get set }
-  func log(_ message: @autoclosure () -> Swift.String, type: Swift.String)
-  func error(_ message: @autoclosure () -> Swift.String, type: Swift.String)
-}
-extension AcquireIOSockets.SocketLogger {
-  public func log(_ message: @autoclosure () -> Swift.String, type: Swift.String)
-  public func error(_ message: @autoclosure () -> Swift.String, type: Swift.String)
-}
-@objc @_hasMissingDesignatedInitializers open class SSLSecurity : ObjectiveC.NSObject {
-  final public let security: AcquireIOSockets.StarScreamSSLSecurity
-  @objc convenience public init(usePublicKeys: Swift.Bool = true)
-  convenience public init(certs: [AcquireIOSockets.SSLCert], usePublicKeys: Swift.Bool)
-  public func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
-  @objc deinit
-}
-public protocol SocketData {
-  func socketRepresentation() throws -> any AcquireIOSockets.SocketData
-}
-extension AcquireIOSockets.SocketData {
-  public func socketRepresentation() -> any AcquireIOSockets.SocketData
-}
-extension Swift.Array : AcquireIOSockets.SocketData {
-}
-extension Swift.Bool : AcquireIOSockets.SocketData {
-}
-extension Swift.Dictionary : AcquireIOSockets.SocketData {
-}
-extension Swift.Double : AcquireIOSockets.SocketData {
-}
-extension Swift.Int : AcquireIOSockets.SocketData {
-}
-extension Foundation.NSArray : AcquireIOSockets.SocketData {
-}
-extension Foundation.Data : AcquireIOSockets.SocketData {
-}
-extension Foundation.NSData : AcquireIOSockets.SocketData {
-}
-extension Foundation.NSDictionary : AcquireIOSockets.SocketData {
-}
-extension Foundation.NSString : AcquireIOSockets.SocketData {
-}
-extension Foundation.NSNull : AcquireIOSockets.SocketData {
-}
-extension Swift.String : AcquireIOSockets.SocketData {
-}
-public typealias AckCallback = ([Any]) -> ()
-public typealias NormalCallback = ([Any], AcquireIOSockets.SocketAckEmitter) -> ()
-public typealias Post = (msg: Swift.String, completion: (() -> ())?)
-public protocol SocketParsable : AnyObject {
-  func parseBinaryData(_ data: Foundation.Data) -> AcquireIOSockets.SocketPacket?
-  func parseSocketMessage(_ message: Swift.String) -> AcquireIOSockets.SocketPacket?
-}
-public enum SocketParsableError : Swift.Error {
-  case invalidDataArray
-  case invalidPacket
-  case invalidPacketType
-  public static func == (a: AcquireIOSockets.SocketParsableError, b: AcquireIOSockets.SocketParsableError) -> Swift.Bool
-  public func hash(into hasher: inout Swift.Hasher)
-  public var hashValue: Swift.Int {
-    get
-  }
-}
-public protocol SocketDataBufferable : AnyObject {
-  var waitingPackets: [AcquireIOSockets.SocketPacket] { get set }
-}
-extension AcquireIOSockets.SocketParsable where Self : AcquireIOSockets.SocketDataBufferable, Self : AcquireIOSockets.SocketManagerSpec {
-  public func parseSocketMessage(_ message: Swift.String) -> AcquireIOSockets.SocketPacket?
-  public func parseBinaryData(_ data: Foundation.Data) -> AcquireIOSockets.SocketPacket?
-}
-public struct SocketPacket : Swift.CustomStringConvertible {
-  public let nsp: Swift.String
-  public let id: Swift.Int
-  public let type: AcquireIOSockets.SocketPacket.PacketType
-  public var binary: [Foundation.Data] {
-    get
-  }
-  public var data: [Any] {
-    get
-  }
-  public var args: [Any] {
-    get
-  }
-  public var description: Swift.String {
-    get
-  }
-  public var event: Swift.String {
-    get
-  }
-  public var packetString: Swift.String {
-    get
-  }
-}
-extension AcquireIOSockets.SocketPacket {
-  public enum PacketType : Swift.Int {
-    case connect
-    case disconnect
-    case event
-    case ack
-    case error
-    case binaryEvent
-    case binaryAck
-    public var isBinary: Swift.Bool {
-      get
-    }
-    public init?(rawValue: Swift.Int)
-    public typealias RawValue = Swift.Int
-    public var rawValue: Swift.Int {
-      get
-    }
-  }
-}
-@objc public protocol SocketManagerSpec : AcquireIOSockets.SocketEngineClient {
-  @objc var defaultSocket: AcquireIOSockets.SocketIOClient { get }
-  @objc var engine: (any AcquireIOSockets.SocketEngineSpec)? { get set }
-  @objc var forceNew: Swift.Bool { get set }
-  @objc var handleQueue: Dispatch.DispatchQueue { get set }
-  @objc var nsps: [Swift.String : AcquireIOSockets.SocketIOClient] { get set }
-  @objc var reconnects: Swift.Bool { get set }
-  @objc var reconnectWait: Swift.Int { get set }
-  @objc var reconnectWaitMax: Swift.Int { get set }
-  @objc var randomizationFactor: Swift.Double { get set }
-  @objc var socketURL: Foundation.URL { get }
-  @objc var status: AcquireIOSockets.SocketIOStatus { get }
-  @objc func connect()
-  @objc func connectSocket(_ socket: AcquireIOSockets.SocketIOClient)
-  @objc func didDisconnect(reason: Swift.String)
-  @objc func disconnect()
-  @objc func disconnectSocket(_ socket: AcquireIOSockets.SocketIOClient)
-  @objc func disconnectSocket(forNamespace nsp: Swift.String)
-  @objc func emitAll(_ event: Swift.String, withItems items: [Any])
-  @objc func reconnect()
-  @objc @discardableResult
-  func removeSocket(_ socket: AcquireIOSockets.SocketIOClient) -> AcquireIOSockets.SocketIOClient?
-  @objc func socket(forNamespace nsp: Swift.String) -> AcquireIOSockets.SocketIOClient
-}
-@objc open class SocketManager : ObjectiveC.NSObject, AcquireIOSockets.SocketManagerSpec, AcquireIOSockets.SocketParsable, AcquireIOSockets.SocketDataBufferable, AcquireIOSockets.ConfigSettable {
-  @objc public var defaultSocket: AcquireIOSockets.SocketIOClient {
+@objc final public class SocketAckEmitter : ObjectiveC.NSObject {
+  @objc final public var rawEmitView: AcquireIOSockets.SocketRawAckView {
     @objc get
   }
-  @objc final public let socketURL: Foundation.URL
-  public var config: AcquireIOSockets.SocketIOClientConfiguration {
+  final public var expected: Swift.Bool {
     get
-    set
   }
-  @objc public var engine: (any AcquireIOSockets.SocketEngineSpec)?
-  @objc public var forceNew: Swift.Bool
-  @objc public var handleQueue: Dispatch.DispatchQueue
-  @objc public var nsps: [Swift.String : AcquireIOSockets.SocketIOClient]
-  @objc public var reconnects: Swift.Bool
-  @objc public var reconnectWait: Swift.Int
-  @objc public var reconnectWaitMax: Swift.Int
-  @objc public var randomizationFactor: Swift.Double
-  @objc public var status: AcquireIOSockets.SocketIOStatus {
+  public init(socket: AcquireIOSockets.SocketIOClient, ackNum: Swift.Int)
+  final public func with(_ items: any AcquireIOSockets.SocketData...)
+  @objc final public func with(_ items: [Any])
+  @objc deinit
+}
+@objc @_hasMissingDesignatedInitializers final public class OnAckCallback : ObjectiveC.NSObject {
+  @objc deinit
+  @objc final public func timingOut(after seconds: Swift.Double, callback: @escaping AcquireIOSockets.AckCallback)
+}
+public enum SocketAckStatus : Swift.String {
+  case noAck
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@objc @_hasMissingDesignatedInitializers final public class SocketAnyEvent : ObjectiveC.NSObject {
+  @objc final public let event: Swift.String
+  @objc final public let items: [Any]?
+  @objc override final public var description: Swift.String {
     @objc get
   }
-  public var waitingPackets: [AcquireIOSockets.SocketPacket]
-  public init(socketURL: Foundation.URL, config: AcquireIOSockets.SocketIOClientConfiguration = [])
-  @objc convenience public init(socketURL: Foundation.URL, config: [Swift.String : Any]?)
   @objc deinit
-  @objc open func connect()
-  @objc open func connectSocket(_ socket: AcquireIOSockets.SocketIOClient)
-  @objc open func didDisconnect(reason: Swift.String)
-  @objc open func disconnect()
-  @objc open func disconnectSocket(_ socket: AcquireIOSockets.SocketIOClient)
-  @objc open func disconnectSocket(forNamespace nsp: Swift.String)
-  open func emitAll(clientEvent event: AcquireIOSockets.SocketClientEvent, data: [Any])
-  open func emitAll(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...)
-  @objc open func emitAll(_ event: Swift.String, withItems items: [Any])
-  @objc open func engineDidClose(reason: Swift.String)
-  @objc open func engineDidError(reason: Swift.String)
-  @objc open func engineDidOpen(reason: Swift.String)
-  @objc open func engineDidReceivePong()
-  @objc open func engineDidSendPing()
-  @objc open func engineDidWebsocketUpgrade(headers: [Swift.String : Swift.String])
-  @objc open func parseEngineMessage(_ msg: Swift.String)
-  @objc open func parseEngineBinaryData(_ data: Foundation.Data)
-  @objc open func reconnect()
-  @discardableResult
-  @objc open func removeSocket(_ socket: AcquireIOSockets.SocketIOClient) -> AcquireIOSockets.SocketIOClient?
-  open func setConfigs(_ config: AcquireIOSockets.SocketIOClientConfiguration)
-  @objc open func socket(forNamespace nsp: Swift.String) -> AcquireIOSockets.SocketIOClient
-}
-@objc public protocol SocketEngineClient {
-  @objc func engineDidError(reason: Swift.String)
-  @objc func engineDidClose(reason: Swift.String)
-  @objc func engineDidOpen(reason: Swift.String)
-  @objc func engineDidReceivePong()
-  @objc func engineDidSendPing()
-  @objc func parseEngineMessage(_ msg: Swift.String)
-  @objc func parseEngineBinaryData(_ data: Foundation.Data)
-  @objc func engineDidWebsocketUpgrade(headers: [Swift.String : Swift.String])
-}
-public protocol SocketEngineWebsocket : AcquireIOSockets.SocketEngineSpec {
-  func sendWebSocketMessage(_ str: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
-}
-extension AcquireIOSockets.SocketEngineWebsocket {
-  public func sendWebSocketMessage(_ str: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
-}
-public protocol SocketEnginePollable : AcquireIOSockets.SocketEngineSpec {
-  var invalidated: Swift.Bool { get }
-  var postWait: [AcquireIOSockets.Post] { get set }
-  var session: Foundation.URLSession? { get }
-  var waitingForPoll: Swift.Bool { get set }
-  var waitingForPost: Swift.Bool { get set }
-  func doPoll()
-  func sendPollMessage(_ message: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
-  func stopPolling()
-}
-extension AcquireIOSockets.SocketEnginePollable {
-  public func doPoll()
-  public func sendPollMessage(_ message: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())? = nil)
-  public func stopPolling()
-}
-@objc public protocol SocketEngineSpec {
-  @objc var client: (any AcquireIOSockets.SocketEngineClient)? { get set }
-  @objc var closed: Swift.Bool { get }
-  @objc var compress: Swift.Bool { get }
-  @objc var connected: Swift.Bool { get }
-  @objc var connectParams: [Swift.String : Any]? { get set }
-  @objc var cookies: [Foundation.HTTPCookie]? { get }
-  @objc var engineQueue: Dispatch.DispatchQueue { get }
-  @objc var extraHeaders: [Swift.String : Swift.String]? { get set }
-  @objc var fastUpgrade: Swift.Bool { get }
-  @objc var forcePolling: Swift.Bool { get }
-  @objc var forceWebsockets: Swift.Bool { get }
-  @objc var polling: Swift.Bool { get }
-  @objc var probing: Swift.Bool { get }
-  @objc var sid: Swift.String { get }
-  @objc var socketPath: Swift.String { get }
-  @objc var urlPolling: Foundation.URL { get }
-  @objc var urlWebSocket: Foundation.URL { get }
-  @objc @available(*, deprecated, message: "No longer needed, if we're not polling, then we must be doing websockets")
-  var websocket: Swift.Bool { get }
-  @objc var ws: AcquireIOSockets.WebSocket? { get }
-  @objc init(client: any AcquireIOSockets.SocketEngineClient, url: Foundation.URL, options: [Swift.String : Any]?)
-  @objc func connect()
-  @objc func didError(reason: Swift.String)
-  @objc func disconnect(reason: Swift.String)
-  @objc func doFastUpgrade()
-  @objc func flushWaitingForPostToWebSocket()
-  @objc func parseEngineData(_ data: Foundation.Data)
-  @objc func parseEngineMessage(_ message: Swift.String)
-  @objc func write(_ msg: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData data: [Foundation.Data], completion: (() -> ())?)
-}
-@objc public enum SocketEnginePacketType : Swift.Int {
-  case open
-  case close
-  case ping
-  case pong
-  case message
-  case upgrade
-  case noop
-  public init?(rawValue: Swift.Int)
-  public typealias RawValue = Swift.Int
-  public var rawValue: Swift.Int {
-    get
-  }
 }
 @objc open class SocketEngine : ObjectiveC.NSObject, Foundation.URLSessionDelegate, AcquireIOSockets.SocketEnginePollable, AcquireIOSockets.SocketEngineWebsocket, AcquireIOSockets.ConfigSettable {
   @objc final public let engineQueue: Dispatch.DispatchQueue
@@ -350,51 +124,87 @@ extension AcquireIOSockets.SocketEnginePollable {
 extension AcquireIOSockets.SocketEngine {
   public func URLSession(session: Foundation.URLSession, didBecomeInvalidWithError error: Foundation.NSError?)
 }
-public struct SocketIOClientConfiguration : Swift.ExpressibleByArrayLiteral, Swift.Collection, Swift.MutableCollection {
-  public typealias Element = AcquireIOSockets.SocketIOClientOption
-  public typealias Index = Swift.Array<AcquireIOSockets.SocketIOClientOption>.Index
-  public typealias Iterator = Swift.Array<AcquireIOSockets.SocketIOClientOption>.Iterator
-  public typealias SubSequence = Swift.Array<AcquireIOSockets.SocketIOClientOption>.SubSequence
-  public var startIndex: AcquireIOSockets.SocketIOClientConfiguration.Index {
-    get
-  }
-  public var endIndex: AcquireIOSockets.SocketIOClientConfiguration.Index {
-    get
-  }
-  public var isEmpty: Swift.Bool {
-    get
-  }
-  public var count: AcquireIOSockets.SocketIOClientConfiguration.Index.Stride {
-    get
-  }
-  public var first: AcquireIOSockets.SocketIOClientConfiguration.Element? {
-    get
-  }
-  public subscript(position: AcquireIOSockets.SocketIOClientConfiguration.Index) -> AcquireIOSockets.SocketIOClientConfiguration.Element {
-    get
-    set
-  }
-  public subscript(bounds: Swift.Range<AcquireIOSockets.SocketIOClientConfiguration.Index>) -> AcquireIOSockets.SocketIOClientConfiguration.SubSequence {
-    get
-    set
-  }
-  public init(arrayLiteral elements: AcquireIOSockets.SocketIOClientConfiguration.Element...)
-  public func makeIterator() -> AcquireIOSockets.SocketIOClientConfiguration.Iterator
-  public func index(after i: AcquireIOSockets.SocketIOClientConfiguration.Index) -> AcquireIOSockets.SocketIOClientConfiguration.Index
-  public mutating func insert(_ element: AcquireIOSockets.SocketIOClientConfiguration.Element, replacing replace: Swift.Bool = true)
-  public typealias ArrayLiteralElement = AcquireIOSockets.SocketIOClientConfiguration.Element
-  public typealias Indices = Swift.DefaultIndices<AcquireIOSockets.SocketIOClientConfiguration>
+@objc public protocol SocketEngineClient {
+  @objc func engineDidError(reason: Swift.String)
+  @objc func engineDidClose(reason: Swift.String)
+  @objc func engineDidOpen(reason: Swift.String)
+  @objc func engineDidReceivePong()
+  @objc func engineDidSendPing()
+  @objc func parseEngineMessage(_ msg: Swift.String)
+  @objc func parseEngineBinaryData(_ data: Foundation.Data)
+  @objc func engineDidWebsocketUpgrade(headers: [Swift.String : Swift.String])
 }
-public protocol ConfigSettable {
-  mutating func setConfigs(_ config: AcquireIOSockets.SocketIOClientConfiguration)
-}
-@objc @_hasMissingDesignatedInitializers final public class SocketAnyEvent : ObjectiveC.NSObject {
-  @objc final public let event: Swift.String
-  @objc final public let items: [Any]?
-  @objc override final public var description: Swift.String {
-    @objc get
+@objc public enum SocketEnginePacketType : Swift.Int {
+  case open
+  case close
+  case ping
+  case pong
+  case message
+  case upgrade
+  case noop
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
   }
-  @objc deinit
+}
+public protocol SocketEnginePollable : AcquireIOSockets.SocketEngineSpec {
+  var invalidated: Swift.Bool { get }
+  var postWait: [AcquireIOSockets.Post] { get set }
+  var session: Foundation.URLSession? { get }
+  var waitingForPoll: Swift.Bool { get set }
+  var waitingForPost: Swift.Bool { get set }
+  func doPoll()
+  func sendPollMessage(_ message: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
+  func stopPolling()
+}
+extension AcquireIOSockets.SocketEnginePollable {
+  public func doPoll()
+  public func sendPollMessage(_ message: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())? = nil)
+  public func stopPolling()
+}
+@objc public protocol SocketEngineSpec {
+  @objc var client: (any AcquireIOSockets.SocketEngineClient)? { get set }
+  @objc var closed: Swift.Bool { get }
+  @objc var compress: Swift.Bool { get }
+  @objc var connected: Swift.Bool { get }
+  @objc var connectParams: [Swift.String : Any]? { get set }
+  @objc var cookies: [Foundation.HTTPCookie]? { get }
+  @objc var engineQueue: Dispatch.DispatchQueue { get }
+  @objc var extraHeaders: [Swift.String : Swift.String]? { get set }
+  @objc var fastUpgrade: Swift.Bool { get }
+  @objc var forcePolling: Swift.Bool { get }
+  @objc var forceWebsockets: Swift.Bool { get }
+  @objc var polling: Swift.Bool { get }
+  @objc var probing: Swift.Bool { get }
+  @objc var sid: Swift.String { get }
+  @objc var socketPath: Swift.String { get }
+  @objc var urlPolling: Foundation.URL { get }
+  @objc var urlWebSocket: Foundation.URL { get }
+  @objc @available(*, deprecated, message: "No longer needed, if we're not polling, then we must be doing websockets")
+  var websocket: Swift.Bool { get }
+  @objc var ws: AcquireIOSockets.WebSocket? { get }
+  @objc init(client: any AcquireIOSockets.SocketEngineClient, url: Foundation.URL, options: [Swift.String : Any]?)
+  @objc func connect()
+  @objc func didError(reason: Swift.String)
+  @objc func disconnect(reason: Swift.String)
+  @objc func doFastUpgrade()
+  @objc func flushWaitingForPostToWebSocket()
+  @objc func parseEngineData(_ data: Foundation.Data)
+  @objc func parseEngineMessage(_ message: Swift.String)
+  @objc func write(_ msg: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData data: [Foundation.Data], completion: (() -> ())?)
+}
+public protocol SocketEngineWebsocket : AcquireIOSockets.SocketEngineSpec {
+  func sendWebSocketMessage(_ str: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
+}
+extension AcquireIOSockets.SocketEngineWebsocket {
+  public func sendWebSocketMessage(_ str: Swift.String, withType type: AcquireIOSockets.SocketEnginePacketType, withData datas: [Foundation.Data], completion: (() -> ())?)
+}
+public struct SocketEventHandler {
+  public let event: Swift.String
+  public let id: Foundation.UUID
+  public let callback: AcquireIOSockets.NormalCallback
+  public func executeCallback(with items: [Any], withAck ack: Swift.Int, withSocket socket: AcquireIOSockets.SocketIOClient)
 }
 @objc open class SocketIOClient : ObjectiveC.NSObject, AcquireIOSockets.SocketIOClientSpec {
   @objc final public let nsp: Swift.String
@@ -452,6 +262,44 @@ public protocol ConfigSettable {
   @objc open func removeAllHandlers()
   @objc open func setReconnecting(reason: Swift.String)
 }
+public struct SocketIOClientConfiguration : Swift.ExpressibleByArrayLiteral, Swift.Collection, Swift.MutableCollection {
+  public typealias Element = AcquireIOSockets.SocketIOClientOption
+  public typealias Index = Swift.Array<AcquireIOSockets.SocketIOClientOption>.Index
+  public typealias Iterator = Swift.Array<AcquireIOSockets.SocketIOClientOption>.Iterator
+  public typealias SubSequence = Swift.Array<AcquireIOSockets.SocketIOClientOption>.SubSequence
+  public var startIndex: AcquireIOSockets.SocketIOClientConfiguration.Index {
+    get
+  }
+  public var endIndex: AcquireIOSockets.SocketIOClientConfiguration.Index {
+    get
+  }
+  public var isEmpty: Swift.Bool {
+    get
+  }
+  public var count: AcquireIOSockets.SocketIOClientConfiguration.Index.Stride {
+    get
+  }
+  public var first: AcquireIOSockets.SocketIOClientConfiguration.Element? {
+    get
+  }
+  public subscript(position: AcquireIOSockets.SocketIOClientConfiguration.Index) -> AcquireIOSockets.SocketIOClientConfiguration.Element {
+    get
+    set
+  }
+  public subscript(bounds: Swift.Range<AcquireIOSockets.SocketIOClientConfiguration.Index>) -> AcquireIOSockets.SocketIOClientConfiguration.SubSequence {
+    get
+    set
+  }
+  public init(arrayLiteral elements: AcquireIOSockets.SocketIOClientConfiguration.Element...)
+  public func makeIterator() -> AcquireIOSockets.SocketIOClientConfiguration.Iterator
+  public func index(after i: AcquireIOSockets.SocketIOClientConfiguration.Index) -> AcquireIOSockets.SocketIOClientConfiguration.Index
+  public mutating func insert(_ element: AcquireIOSockets.SocketIOClientConfiguration.Element, replacing replace: Swift.Bool = true)
+  public typealias ArrayLiteralElement = AcquireIOSockets.SocketIOClientConfiguration.Element
+  public typealias Indices = Swift.DefaultIndices<AcquireIOSockets.SocketIOClientConfiguration>
+}
+public protocol ConfigSettable {
+  mutating func setConfigs(_ config: AcquireIOSockets.SocketIOClientConfiguration)
+}
 public enum SocketIOClientOption {
   case compress
   case connectParams([Swift.String : Any])
@@ -477,24 +325,6 @@ public enum SocketIOClientOption {
     get
   }
   public static func == (lhs: AcquireIOSockets.SocketIOClientOption, rhs: AcquireIOSockets.SocketIOClientOption) -> Swift.Bool
-}
-public struct SocketEventHandler {
-  public let event: Swift.String
-  public let id: Foundation.UUID
-  public let callback: AcquireIOSockets.NormalCallback
-  public func executeCallback(with items: [Any], withAck ack: Swift.Int, withSocket socket: AcquireIOSockets.SocketIOClient)
-}
-@objc @_hasMissingDesignatedInitializers final public class SocketRawView : ObjectiveC.NSObject {
-  final public func emit(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...)
-  @objc final public func emit(_ event: Swift.String, with items: [Any])
-  final public func emitWithAck(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...) -> AcquireIOSockets.OnAckCallback
-  @objc final public func emitWithAck(_ event: Swift.String, with items: [Any]) -> AcquireIOSockets.OnAckCallback
-  @objc deinit
-}
-@objc @_hasMissingDesignatedInitializers final public class SocketRawAckView : ObjectiveC.NSObject {
-  final public func with(_ items: any AcquireIOSockets.SocketData...)
-  @objc final public func with(_ items: [Any])
-  @objc deinit
 }
 public protocol SocketIOClientSpec : AnyObject {
   var anyHandler: ((AcquireIOSockets.SocketAnyEvent) -> ())? { get }
@@ -565,30 +395,194 @@ public enum SocketClientEvent : Swift.String {
     get
   }
 }
-public enum SocketAckStatus : Swift.String {
-  case noAck
-  public init?(rawValue: Swift.String)
-  public typealias RawValue = Swift.String
-  public var rawValue: Swift.String {
+public protocol SocketLogger : AnyObject {
+  var log: Swift.Bool { get set }
+  func log(_ message: @autoclosure () -> Swift.String, type: Swift.String)
+  func error(_ message: @autoclosure () -> Swift.String, type: Swift.String)
+}
+extension AcquireIOSockets.SocketLogger {
+  public func log(_ message: @autoclosure () -> Swift.String, type: Swift.String)
+  public func error(_ message: @autoclosure () -> Swift.String, type: Swift.String)
+}
+@objc open class SocketManager : ObjectiveC.NSObject, AcquireIOSockets.SocketManagerSpec, AcquireIOSockets.SocketParsable, AcquireIOSockets.SocketDataBufferable, AcquireIOSockets.ConfigSettable {
+  @objc public var defaultSocket: AcquireIOSockets.SocketIOClient {
+    @objc get
+  }
+  @objc final public let socketURL: Foundation.URL
+  public var config: AcquireIOSockets.SocketIOClientConfiguration {
+    get
+    set
+  }
+  @objc public var engine: (any AcquireIOSockets.SocketEngineSpec)?
+  @objc public var forceNew: Swift.Bool
+  @objc public var handleQueue: Dispatch.DispatchQueue
+  @objc public var nsps: [Swift.String : AcquireIOSockets.SocketIOClient]
+  @objc public var reconnects: Swift.Bool
+  @objc public var reconnectWait: Swift.Int
+  @objc public var reconnectWaitMax: Swift.Int
+  @objc public var randomizationFactor: Swift.Double
+  @objc public var status: AcquireIOSockets.SocketIOStatus {
+    @objc get
+  }
+  public var waitingPackets: [AcquireIOSockets.SocketPacket]
+  public init(socketURL: Foundation.URL, config: AcquireIOSockets.SocketIOClientConfiguration = [])
+  @objc convenience public init(socketURL: Foundation.URL, config: [Swift.String : Any]?)
+  @objc deinit
+  @objc open func connect()
+  @objc open func connectSocket(_ socket: AcquireIOSockets.SocketIOClient)
+  @objc open func didDisconnect(reason: Swift.String)
+  @objc open func disconnect()
+  @objc open func disconnectSocket(_ socket: AcquireIOSockets.SocketIOClient)
+  @objc open func disconnectSocket(forNamespace nsp: Swift.String)
+  open func emitAll(clientEvent event: AcquireIOSockets.SocketClientEvent, data: [Any])
+  open func emitAll(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...)
+  @objc open func emitAll(_ event: Swift.String, withItems items: [Any])
+  @objc open func engineDidClose(reason: Swift.String)
+  @objc open func engineDidError(reason: Swift.String)
+  @objc open func engineDidOpen(reason: Swift.String)
+  @objc open func engineDidReceivePong()
+  @objc open func engineDidSendPing()
+  @objc open func engineDidWebsocketUpgrade(headers: [Swift.String : Swift.String])
+  @objc open func parseEngineMessage(_ msg: Swift.String)
+  @objc open func parseEngineBinaryData(_ data: Foundation.Data)
+  @objc open func reconnect()
+  @discardableResult
+  @objc open func removeSocket(_ socket: AcquireIOSockets.SocketIOClient) -> AcquireIOSockets.SocketIOClient?
+  open func setConfigs(_ config: AcquireIOSockets.SocketIOClientConfiguration)
+  @objc open func socket(forNamespace nsp: Swift.String) -> AcquireIOSockets.SocketIOClient
+}
+@objc public protocol SocketManagerSpec : AcquireIOSockets.SocketEngineClient {
+  @objc var defaultSocket: AcquireIOSockets.SocketIOClient { get }
+  @objc var engine: (any AcquireIOSockets.SocketEngineSpec)? { get set }
+  @objc var forceNew: Swift.Bool { get set }
+  @objc var handleQueue: Dispatch.DispatchQueue { get set }
+  @objc var nsps: [Swift.String : AcquireIOSockets.SocketIOClient] { get set }
+  @objc var reconnects: Swift.Bool { get set }
+  @objc var reconnectWait: Swift.Int { get set }
+  @objc var reconnectWaitMax: Swift.Int { get set }
+  @objc var randomizationFactor: Swift.Double { get set }
+  @objc var socketURL: Foundation.URL { get }
+  @objc var status: AcquireIOSockets.SocketIOStatus { get }
+  @objc func connect()
+  @objc func connectSocket(_ socket: AcquireIOSockets.SocketIOClient)
+  @objc func didDisconnect(reason: Swift.String)
+  @objc func disconnect()
+  @objc func disconnectSocket(_ socket: AcquireIOSockets.SocketIOClient)
+  @objc func disconnectSocket(forNamespace nsp: Swift.String)
+  @objc func emitAll(_ event: Swift.String, withItems items: [Any])
+  @objc func reconnect()
+  @objc @discardableResult
+  func removeSocket(_ socket: AcquireIOSockets.SocketIOClient) -> AcquireIOSockets.SocketIOClient?
+  @objc func socket(forNamespace nsp: Swift.String) -> AcquireIOSockets.SocketIOClient
+}
+public struct SocketPacket : Swift.CustomStringConvertible {
+  public let nsp: Swift.String
+  public let id: Swift.Int
+  public let type: AcquireIOSockets.SocketPacket.PacketType
+  public var binary: [Foundation.Data] {
+    get
+  }
+  public var data: [Any] {
+    get
+  }
+  public var args: [Any] {
+    get
+  }
+  public var description: Swift.String {
+    get
+  }
+  public var event: Swift.String {
+    get
+  }
+  public var packetString: Swift.String {
     get
   }
 }
-@objc final public class SocketAckEmitter : ObjectiveC.NSObject {
-  @objc final public var rawEmitView: AcquireIOSockets.SocketRawAckView {
-    @objc get
+extension AcquireIOSockets.SocketPacket {
+  public enum PacketType : Swift.Int {
+    case connect
+    case disconnect
+    case event
+    case ack
+    case error
+    case binaryEvent
+    case binaryAck
+    public var isBinary: Swift.Bool {
+      get
+    }
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
   }
-  final public var expected: Swift.Bool {
+}
+public protocol SocketParsable : AnyObject {
+  func parseBinaryData(_ data: Foundation.Data) -> AcquireIOSockets.SocketPacket?
+  func parseSocketMessage(_ message: Swift.String) -> AcquireIOSockets.SocketPacket?
+}
+public enum SocketParsableError : Swift.Error {
+  case invalidDataArray
+  case invalidPacket
+  case invalidPacketType
+  public static func == (a: AcquireIOSockets.SocketParsableError, b: AcquireIOSockets.SocketParsableError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
     get
   }
-  public init(socket: AcquireIOSockets.SocketIOClient, ackNum: Swift.Int)
+}
+public protocol SocketDataBufferable : AnyObject {
+  var waitingPackets: [AcquireIOSockets.SocketPacket] { get set }
+}
+extension AcquireIOSockets.SocketParsable where Self : AcquireIOSockets.SocketDataBufferable, Self : AcquireIOSockets.SocketManagerSpec {
+  public func parseSocketMessage(_ message: Swift.String) -> AcquireIOSockets.SocketPacket?
+  public func parseBinaryData(_ data: Foundation.Data) -> AcquireIOSockets.SocketPacket?
+}
+@objc @_hasMissingDesignatedInitializers final public class SocketRawView : ObjectiveC.NSObject {
+  final public func emit(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...)
+  @objc final public func emit(_ event: Swift.String, with items: [Any])
+  final public func emitWithAck(_ event: Swift.String, _ items: any AcquireIOSockets.SocketData...) -> AcquireIOSockets.OnAckCallback
+  @objc final public func emitWithAck(_ event: Swift.String, with items: [Any]) -> AcquireIOSockets.OnAckCallback
+  @objc deinit
+}
+@objc @_hasMissingDesignatedInitializers final public class SocketRawAckView : ObjectiveC.NSObject {
   final public func with(_ items: any AcquireIOSockets.SocketData...)
   @objc final public func with(_ items: [Any])
   @objc deinit
 }
-@objc @_hasMissingDesignatedInitializers final public class OnAckCallback : ObjectiveC.NSObject {
-  @objc deinit
-  @objc final public func timingOut(after seconds: Swift.Double, callback: @escaping AcquireIOSockets.AckCallback)
+public protocol SocketData {
+  func socketRepresentation() throws -> any AcquireIOSockets.SocketData
 }
+extension AcquireIOSockets.SocketData {
+  public func socketRepresentation() -> any AcquireIOSockets.SocketData
+}
+extension Swift.Array : AcquireIOSockets.SocketData {
+}
+extension Swift.Bool : AcquireIOSockets.SocketData {
+}
+extension Swift.Dictionary : AcquireIOSockets.SocketData {
+}
+extension Swift.Double : AcquireIOSockets.SocketData {
+}
+extension Swift.Int : AcquireIOSockets.SocketData {
+}
+extension Foundation.NSArray : AcquireIOSockets.SocketData {
+}
+extension Foundation.Data : AcquireIOSockets.SocketData {
+}
+extension Foundation.NSData : AcquireIOSockets.SocketData {
+}
+extension Foundation.NSDictionary : AcquireIOSockets.SocketData {
+}
+extension Foundation.NSString : AcquireIOSockets.SocketData {
+}
+extension Foundation.NSNull : AcquireIOSockets.SocketData {
+}
+extension Swift.String : AcquireIOSockets.SocketData {
+}
+public typealias AckCallback = ([Any]) -> ()
+public typealias NormalCallback = ([Any], AcquireIOSockets.SocketAckEmitter) -> ()
+public typealias Post = (msg: Swift.String, completion: (() -> ())?)
 public struct SSLClientCertificateError : Foundation.LocalizedError {
   public var errorDescription: Swift.String?
 }
@@ -597,6 +591,33 @@ public class SSLClientCertificate {
   public init(identity: Security.SecIdentity, identityCertificate: Security.SecCertificate)
   convenience public init(pkcs12Url: Foundation.URL, password: Swift.String) throws
   public init(pkcs12Url: Foundation.URL, importOptions: CoreFoundation.CFDictionary) throws
+  @objc deinit
+}
+@objc @_hasMissingDesignatedInitializers open class SSLSecurity : ObjectiveC.NSObject {
+  final public let security: AcquireIOSockets.StarScreamSSLSecurity
+  @objc convenience public init(usePublicKeys: Swift.Bool = true)
+  convenience public init(certs: [AcquireIOSockets.SSLCert], usePublicKeys: Swift.Bool)
+  public func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
+  @objc deinit
+}
+public protocol SSLTrustValidator {
+  func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
+}
+open class SSLCert {
+  public init(data: Foundation.Data)
+  public init(key: Security.SecKey)
+  @objc deinit
+}
+open class StarScreamSSLSecurity : AcquireIOSockets.SSLTrustValidator {
+  public var validatedDN: Swift.Bool
+  public var validateEntireChain: Swift.Bool
+  convenience public init(usePublicKeys: Swift.Bool = false)
+  public init(certs: [AcquireIOSockets.SSLCert], usePublicKeys: Swift.Bool)
+  open func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
+  public func extractPublicKey(_ data: Foundation.Data) -> Security.SecKey?
+  public func extractPublicKey(_ cert: Security.SecCertificate, policy: Security.SecPolicy) -> Security.SecKey?
+  public func certificateChain(_ trust: Security.SecTrust) -> [Foundation.Data]
+  public func publicKeyChain(_ trust: Security.SecTrust) -> [Security.SecKey]
   @objc deinit
 }
 public let WebsocketDidConnectNotification: Swift.String
@@ -769,31 +790,9 @@ public protocol WebSocketAdvancedDelegate : AnyObject {
   public func streamDidError(error: (any Swift.Error)?)
   @objc deinit
 }
-public protocol SSLTrustValidator {
-  func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
-}
-open class SSLCert {
-  public init(data: Foundation.Data)
-  public init(key: Security.SecKey)
-  @objc deinit
-}
-open class StarScreamSSLSecurity : AcquireIOSockets.SSLTrustValidator {
-  public var validatedDN: Swift.Bool
-  public var validateEntireChain: Swift.Bool
-  convenience public init(usePublicKeys: Swift.Bool = false)
-  public init(certs: [AcquireIOSockets.SSLCert], usePublicKeys: Swift.Bool)
-  open func isValid(_ trust: Security.SecTrust, domain: Swift.String?) -> Swift.Bool
-  public func extractPublicKey(_ data: Foundation.Data) -> Security.SecKey?
-  public func extractPublicKey(_ cert: Security.SecCertificate, policy: Security.SecPolicy) -> Security.SecKey?
-  public func certificateChain(_ trust: Security.SecTrust) -> [Foundation.Data]
-  public func publicKeyChain(_ trust: Security.SecTrust) -> [Security.SecKey]
-  @objc deinit
-}
-extension AcquireIOSockets.SocketParsableError : Swift.Equatable {}
-extension AcquireIOSockets.SocketParsableError : Swift.Hashable {}
-extension AcquireIOSockets.SocketPacket.PacketType : Swift.Equatable {}
-extension AcquireIOSockets.SocketPacket.PacketType : Swift.Hashable {}
-extension AcquireIOSockets.SocketPacket.PacketType : Swift.RawRepresentable {}
+extension AcquireIOSockets.SocketAckStatus : Swift.Equatable {}
+extension AcquireIOSockets.SocketAckStatus : Swift.Hashable {}
+extension AcquireIOSockets.SocketAckStatus : Swift.RawRepresentable {}
 extension AcquireIOSockets.SocketEnginePacketType : Swift.Equatable {}
 extension AcquireIOSockets.SocketEnginePacketType : Swift.Hashable {}
 extension AcquireIOSockets.SocketEnginePacketType : Swift.RawRepresentable {}
@@ -805,9 +804,11 @@ extension AcquireIOSockets.SocketClientEvent : Swift.RawRepresentable {}
 extension AcquireIOSockets.SocketIOStatus : Swift.Equatable {}
 extension AcquireIOSockets.SocketIOStatus : Swift.Hashable {}
 extension AcquireIOSockets.SocketIOStatus : Swift.RawRepresentable {}
-extension AcquireIOSockets.SocketAckStatus : Swift.Equatable {}
-extension AcquireIOSockets.SocketAckStatus : Swift.Hashable {}
-extension AcquireIOSockets.SocketAckStatus : Swift.RawRepresentable {}
+extension AcquireIOSockets.SocketPacket.PacketType : Swift.Equatable {}
+extension AcquireIOSockets.SocketPacket.PacketType : Swift.Hashable {}
+extension AcquireIOSockets.SocketPacket.PacketType : Swift.RawRepresentable {}
+extension AcquireIOSockets.SocketParsableError : Swift.Equatable {}
+extension AcquireIOSockets.SocketParsableError : Swift.Hashable {}
 extension AcquireIOSockets.CloseCode : Swift.Equatable {}
 extension AcquireIOSockets.CloseCode : Swift.Hashable {}
 extension AcquireIOSockets.CloseCode : Swift.RawRepresentable {}

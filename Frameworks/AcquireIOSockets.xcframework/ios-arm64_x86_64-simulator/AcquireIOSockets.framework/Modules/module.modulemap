@@ -1,3 +1,10 @@
 framework module AcquireIOSockets {
+  umbrella header "AcquireIOSockets-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module AcquireIOSockets.Swift {
   header "AcquireIOSockets-Swift.h"
 }
