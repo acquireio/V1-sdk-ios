@@ -1,6 +1,6 @@
-# V1SDK
+# V1-sdk-ios
 
-A Swift Package for iOS that bundles the AcquireIO, AcquireIOSockets, and WebRTC xcframeworks behind a single `V1SDK` module.
+A Swift Package for iOS that bundles the AcquireIO, AcquireIOSockets, and WebRTC xcframeworks behind a single `V1-sdk-ios` module.
 
 ## Requirements
 
