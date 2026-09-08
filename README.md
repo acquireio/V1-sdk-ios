@@ -4,7 +4,7 @@ A Swift Package for iOS that bundles the AcquireIO, AcquireIOSockets, and WebRTC
 
 ## Requirements
 
-- iOS 15.0+
+- iOS 12.0+
 - Swift tools 5.10+
 
 ## Required Permissions & Capabilities
