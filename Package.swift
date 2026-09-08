@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "V1SDK",
     platforms: [
-        .iOS(.v13)
+        .iOS(.v12)
     ],
     products: [
         .library(
@@ -14,11 +14,28 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "V1SDK"
+            name: "V1SDK",
+            dependencies: [
+                "AcquireIO",
+                "AcquireIOSockets",
+                "WebRTC"
+            ]
         ),
         .testTarget(
             name: "V1SDKTests",
             dependencies: ["V1SDK"]
+        ),
+        .binaryTarget(
+            name: "AcquireIO",
+            path: "Frameworks/AcquireIO.xcframework"
+        ),
+        .binaryTarget(
+            name: "AcquireIOSockets",
+            path: "Frameworks/AcquireIOSockets.xcframework"
+        ),
+        .binaryTarget(
+            name: "WebRTC",
+            path: "Frameworks/WebRTC.xcframework"
         )
     ]
 )
