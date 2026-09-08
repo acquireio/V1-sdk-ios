@@ -19,6 +19,9 @@ let package = Package(
                 "AcquireIO",
                 "AcquireIOSockets",
                 "WebRTC"
+            ],
+            linkerSettings: [
+                .unsafeFlags(["-ObjC"])
             ]
         ),
         .testTarget(
