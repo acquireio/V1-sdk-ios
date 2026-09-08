@@ -23,6 +23,8 @@ Or in Xcode: **File > Add Package Dependencies...** and enter the repository URL
 
 ## Usage
 
+### Swift
+
 Import `V1SDK` to get access to `AcquireIO`, `AcquireIOSockets`, and `WebRTC`:
 
 ```swift
@@ -31,7 +33,7 @@ import V1SDK
 
 ### Objective-C
 
-Import `AcquireIO` and conform your `AppDelegate` to `AcquireIODelegate`:
+Import `AcquireIO` directly and conform your `AppDelegate` to `AcquireIODelegate`:
 
 ```objc
 #import <AcquireIO/AcquireIO.h>
@@ -43,19 +45,13 @@ Import `AcquireIO` and conform your `AppDelegate` to `AcquireIODelegate`:
 Set up the SDK in `application:didFinishLaunchingWithOptions:`:
 
 ```objc
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+[[AcquireIO support] addDelegate:self];
 
-    [[AcquireIO support] addDelegate:self];
+AcquireIOConfig *config = [AcquireIOConfig config];
+config.sessionConnectAndStartAuto = YES; // default
+config.buttonImageName = @"chat"; // chat widget launcher icon (chat@2x.png)
 
-    AcquireIOConfig *config = [AcquireIOConfig config];
-    config.sessionConnectAndStartAuto = YES; // default
-    config.buttonImageName = @"chat"; // chat widget launcher icon (chat@2x.png)
-
-    [[AcquireIO support] setAccount:@"5d03c" withOptions:config];
-
-    // Override point for customization after application launch.
-    return YES;
-}
+[[AcquireIO support] setAccount:@"YOUR_ACCOUNT_UID" withOptions:config]; // replace with your account UID
 ```
 
 Implement the delegate callback to observe connection status changes:
