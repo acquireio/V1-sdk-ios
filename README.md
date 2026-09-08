@@ -7,6 +7,24 @@ A Swift Package for iOS that bundles the AcquireIO, AcquireIOSockets, and WebRTC
 - iOS 12.0+
 - Swift tools 5.10+
 
+## Required Permissions & Capabilities
+
+Add these to the **consuming app's** `Info.plist` and target capabilities — they cannot be provided by this package itself.
+
+| Key | Reason |
+|---|---|
+| `Privacy - Camera Usage Description` (`NSCameraUsageDescription`) | Required for video calls (WebRTC captures from the device camera). |
+| `Privacy - Microphone Usage Description` (`NSMicrophoneUsageDescription`) | Required for audio and video calls (WebRTC captures call audio). |
+| `Privacy - Photo Library Usage Description` (`NSPhotoLibraryUsageDescription`) | Required if your app lets users attach photos to chat (`AIOFileUpload`). |
+| `Privacy - Photo Library Additions Usage Description` (`NSPhotoLibraryAddUsageDescription`) | Only if your app saves received images back to the photo library. |
+
+Fill in real, descriptive text for each key — an empty string will fail App Store review.
+
+If you support push notifications for incoming chat messages/calls (`AcquireIOClient` forwards these via `appDidReceiveMessage:`), also enable:
+
+- **Signing & Capabilities > Push Notifications**
+- **Signing & Capabilities > Background Modes** → **Remote notifications** (and **Voice over IP** if calls use PushKit)
+
 ## Installation
 
 ### Swift Package Manager
